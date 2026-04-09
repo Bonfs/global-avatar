@@ -1,13 +1,15 @@
 # Desenvolvimento Backend
 
-Neste projeto, você encontra os arquivos iniciais baixados diretamente do Spring Initializr:
+Código final da aula 01 - Conceitos Iniciais
 
-- Projeto: Gradle - Kotlin
-- Linguagem: Kotlin
-- Spring Boot: 4.0.5
-- Java 21
+Não contém os exercícios resolvidos.
+Você pode encontra-los no código inicial da aula 02.
 
-## Dependências
+## Classes adicionadas
 
-- Spring Web MVC
-- Validation
+- User: Classe de negócios do usuário
+- UserRepository: Representa o "banco de dados". Nesta aula simulado através de um Map
+- UserService: Classe de serviço. Executa a lógica de negócios.
+- UserController: Faz a fronteira entre o backend e o mundo exterior
+
+A view é implicitamente formada pela serialização dos objetos em xmls.
