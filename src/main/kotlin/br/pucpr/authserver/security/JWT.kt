@@ -57,7 +57,7 @@ class Jwt(
     }
 
     companion object {
-        val log: Logger = LoggerFactory.getLogger(Jwt::class.java)
+        val log = LoggerFactory.getLogger(Jwt::class.java)
         const val USER_FIELD = "user"
 
         private fun utcNow() = ZonedDateTime.now(ZoneOffset.UTC)

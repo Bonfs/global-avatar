@@ -43,7 +43,7 @@ dependencies {
 	//Spring security e JJWT
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
-	val jjwt = "0.13.0"
+	val jjwt = "0.13.+"
 	implementation("io.jsonwebtoken:jjwt-api:$jjwt")
 	implementation("io.jsonwebtoken:jjwt-jackson:$jjwt")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwt")
