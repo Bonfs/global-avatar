@@ -58,6 +58,10 @@ class Jwt(
 
     companion object {
         val log = LoggerFactory.getLogger(Jwt::class.java)
+        const val SECRET = "6d92f1d355bb43e11e8f04a9f115adabdcfb32b4"
+        const val EXPIRE_HOURS = 48L
+        const val ADMIN_EXPIRE_HOURS = 1L
+        const val ISSUER = "PUCPR AuthServer"
         const val USER_FIELD = "user"
 
         private fun utcNow() = ZonedDateTime.now(ZoneOffset.UTC)
