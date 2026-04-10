@@ -1,5 +1,7 @@
 package br.pucpr.authserver.users
 
+import br.pucpr.authserver.exception.NotFoundException
+import br.pucpr.authserver.exceptions.BadRequestException
 import br.pucpr.authserver.roles.RoleRepository
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
@@ -10,9 +12,9 @@ class UserService(
     val repository: UserRepository,
     val roleRepository: RoleRepository
 ) {
-    fun insert(user: User): User? {
+    fun insert(user: User): User {
         if (repository.findByEmail(user.email) != null) {
-            return null
+            throw BadRequestException("User already exists")
         }
         return repository.save(user)
     }
@@ -23,24 +25,23 @@ class UserService(
     }
 
     fun findByIdOrNull(id: Long) = repository.findByIdOrNull(id)
+    fun findById(id: Long) = repository.findByIdOrNull(id) ?: throw NotFoundException(id)
 
-    fun delete(id: Long): Boolean? {
-        val user = findByIdOrNull(id) ?: return false
+    fun delete(id: Long) {
+        val user = findById(id)
         if (user.isAdmin() && repository.findByRole("ADMIN").size == 1) {
-            return null
+            throw BadRequestException("Cannot delete the last admin")
         }
         repository.delete(user)
-        return true
     }
 
     fun findByRole(role: String) = repository.findByRole(role.uppercase())
 
-    fun addRole(id: Long, roleName: String): Boolean? {
+    fun addRole(id: Long, roleName: String): Boolean {
         val upperRole = roleName.uppercase()
-        val user = findByIdOrNull(id) ?: return null
-        if (user.roles.any { it.name == upperRole }) return false
-
-        val role = roleRepository.findByName(upperRole) ?: return null
+        val user = findById(id)
+        val role = roleRepository.findByName(upperRole) ?:
+            throw BadRequestException("Role $upperRole not found")
 
         user.roles.add(role)
         repository.save(user)
