@@ -3,6 +3,7 @@ package br.pucpr.authserver.users
 import br.pucpr.authserver.exception.NotFoundException
 import br.pucpr.authserver.exceptions.BadRequestException
 import br.pucpr.authserver.roles.RoleRepository
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -16,7 +17,9 @@ class UserService(
         if (repository.findByEmail(user.email) != null) {
             throw BadRequestException("User already exists")
         }
-        return repository.save(user)
+        val user = repository.save(user)
+        log.info("Inserted new user {}", user.id)
+        return user
     }
 
     fun findAll(dir: SortDir = SortDir.ASC) = when (dir) {
@@ -33,6 +36,7 @@ class UserService(
             throw BadRequestException("Cannot delete the last admin")
         }
         repository.delete(user)
+        log.info("User {} deleted", user.id)
     }
 
     fun findByRole(role: String) = repository.findByRole(role.uppercase())
@@ -45,6 +49,11 @@ class UserService(
 
         user.roles.add(role)
         repository.save(user)
+        log.info("Added role {} to user {}", upperRole, user.id)
         return true
+    }
+
+    companion object {
+        private val log = LoggerFactory.getLogger(UserService::class.java)
     }
 }
