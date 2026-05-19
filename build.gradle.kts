@@ -47,6 +47,10 @@ dependencies {
 	implementation("io.jsonwebtoken:jjwt-api:$jjwt")
 	implementation("io.jsonwebtoken:jjwt-jackson:$jjwt")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:$jjwt")
+
+	//Externalized configuration
+	annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+
 }
 
 kotlin {

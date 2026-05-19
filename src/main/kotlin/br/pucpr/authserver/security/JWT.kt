@@ -6,6 +6,7 @@ import io.jsonwebtoken.jackson.io.JacksonDeserializer
 import io.jsonwebtoken.jackson.io.JacksonSerializer
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders.AUTHORIZATION
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
@@ -17,18 +18,20 @@ import java.time.ZonedDateTime
 import java.util.*
 
 @Component
-class Jwt {
+class Jwt(
+    val props: SecurityProperties,
+) {
     fun createToken(user: User): String =
         UserToken(user).let {
             Jwts.builder().json(JacksonSerializer())
-                .signWith(Keys.hmacShaKeyFor(SECRET.toByteArray()))
+                .signWith(Keys.hmacShaKeyFor(props.secret.toByteArray()))
                 .issuedAt(utcNow().toDate())
                 .expiration(
                     utcNow().plusHours(
-                        if (it.isAdmin) ADMIN_EXPIRE_HOURS else EXPIRE_HOURS
+                        if (it.isAdmin) props.adminExpireHours else props.expireHours
                     ).toDate()
                 )
-                .issuer(ISSUER)
+                .issuer(props.issuer)
                 .subject(user.id.toString())
                 .claim(USER_FIELD, it)
                 .compact()
@@ -41,11 +44,11 @@ class Jwt {
             val token = header.replace("Bearer", "").trim()
 
             val claims = Jwts.parser().json(JacksonDeserializer(mapOf(USER_FIELD to UserToken::class.java)))
-                .verifyWith(Keys.hmacShaKeyFor(SECRET.toByteArray()))
+                .verifyWith(Keys.hmacShaKeyFor(props.secret.toByteArray()))
                 .build()
                 .parseSignedClaims(token).payload
 
-            if (claims.issuer != ISSUER) return null
+            if (claims.issuer != props.issuer) return null
             return claims.get("user", UserToken::class.java).toAuthentication()
         } catch (e: Throwable) {
             log.debug("Token rejected", e)
@@ -54,11 +57,7 @@ class Jwt {
     }
 
     companion object {
-        val log = LoggerFactory.getLogger(Jwt::class.java)
-        const val SECRET = "6d92f1d355bb43e11e8f04a9f115adabdcfb32b4"
-        const val EXPIRE_HOURS = 48L
-        const val ADMIN_EXPIRE_HOURS = 1L
-        const val ISSUER = "PUCPR AuthServer"
+        val log: Logger = LoggerFactory.getLogger(Jwt::class.java)
         const val USER_FIELD = "user"
 
         private fun utcNow() = ZonedDateTime.now(ZoneOffset.UTC)
