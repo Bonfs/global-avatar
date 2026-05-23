@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 class UserService(
     val repository: UserRepository,
     val roleRepository: RoleRepository,
+    val avatarService: AvatarService,
     val jwt: Jwt
 ) {
     fun insert(user: User): User {
@@ -76,9 +78,19 @@ class UserService(
         log.info("User ${user.id} is logged in")
         return LoginResponse(
             token = jwt.createToken(user),
-            UserResponse(user)
+            user = toResponse(user)
         )
     }
+
+    fun saveAvatar(id: Long, avatar: MultipartFile): String {
+        val user = findById(id)
+        user.avatar = avatarService.save(user, avatar)
+        repository.save(user)
+        return avatarService.urlFor(user.avatar)
+    }
+
+    fun toResponse(user: User) =
+        UserResponse(user, avatarService.urlFor(user.avatar))
 
     companion object {
         val log = LoggerFactory.getLogger(UserService::class.java)

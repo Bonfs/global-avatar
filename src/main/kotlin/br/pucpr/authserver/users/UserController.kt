@@ -13,6 +13,8 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import java.net.URI
 
 @RestController
 @RequestMapping("/users")
@@ -25,7 +27,7 @@ class UserController(val service: UserService) {
         val users = if (role != null) service.findByRole(role)
         else service.findAll(SortDir.find(sortDir ?: "ASC"))
         return users
-            .map { UserResponse(it) }
+            .map { service.toResponse(it) }
             .let { ResponseEntity.ok(it) }
     }
 
@@ -33,7 +35,7 @@ class UserController(val service: UserService) {
     fun insert(
         @Valid @RequestBody user: CreateUserRequest
     ) = service.insert(user.toUser())
-        .let { UserResponse(it) }
+        .let { service.toResponse(it) }
         .let { ResponseEntity.status(HttpStatus.CREATED).body(it) }
 
     @PostMapping("/login")
@@ -45,7 +47,7 @@ class UserController(val service: UserService) {
     fun getById(
         @PathVariable id: Long
     ) = service.findById(id)
-        .let { UserResponse(it) }
+        .let { service.toResponse(it) }
         .let { ResponseEntity.ok(it) }
 
     @SecurityRequirement(name = "jwt-auth")
@@ -60,7 +62,7 @@ class UserController(val service: UserService) {
             throw ForbiddenException("Update is not allowed")
         }
         return service.update(id, user.name!!)
-            ?.let { UserResponse(it) }
+            ?.let { service.toResponse(it) }
             ?.let { ResponseEntity.ok(it) }
             ?: ResponseEntity.noContent().build()
     }
@@ -83,4 +85,10 @@ class UserController(val service: UserService) {
             if (it) ResponseEntity.ok().build()
             else ResponseEntity.noContent().build()
         }
+
+    @SecurityRequirement(name = "jwt-auth")
+    @PutMapping("/{id}/avatar", consumes = ["multipart/form-data"])
+    fun uploadAvatar(@PathVariable id: Long, @RequestParam avatar: MultipartFile) =
+        service.saveAvatar(id, avatar)
+            .let { ResponseEntity.created(URI(it)).build<Void>() }
 }
