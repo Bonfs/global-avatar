@@ -13,3 +13,7 @@ spring:
       include-binding-errors: always
       include-stacktrace: on_param
       include-exception: true
+
+logging:
+  file:
+    path: ./logs

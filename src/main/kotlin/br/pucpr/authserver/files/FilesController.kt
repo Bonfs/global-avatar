@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 class FilesController(@Qualifier("fileStorage") val storage: FileStorage) {
     @SecurityRequirement(name = "AuthServer")
     @GetMapping("/{filename}", produces = ["image/jpeg", "image/png"])
-    suspend fun serve(@PathVariable filename: String): ResponseEntity<Resource> {
+    fun serve(@PathVariable filename: String): ResponseEntity<Resource> {
         val contentType = if (filename.endsWith("png"))
             MediaType.IMAGE_PNG else MediaType.IMAGE_JPEG
         return storage.load(filename)
